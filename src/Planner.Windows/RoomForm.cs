@@ -33,10 +33,12 @@ internal sealed class RoomForm : Form {
             var text=r.GetProperty("text").GetString()??"";
             if(kind=="connected"){connected=true;Say("Соединение WebRTC установлено. Проверьте присутствие при первом тесте.");}
             else if(kind=="disconnected"){connected=false;Say("Соединение прервано. Проверьте комнату.");}
-            else if(kind=="landing"&&automatic&&!connected&&DateTimeOffset.UtcNow<job.End) {
-                if(recoveries<3 && DateTimeOffset.UtcNow-lastReload>TimeSpan.FromSeconds(20)) {
-                    recoveries++;lastReload=DateTimeOffset.UtcNow;Say($"Возврат к комнате ({recoveries}/3)…");view.CoreWebView2.Navigate(job.Url);
-                } else if(recoveries>=3)Say("Телемост вернул главную страницу. Автовход не подтверждён.");
+            else if(kind=="landing"&&automatic&&DateTimeOffset.UtcNow<job.End) {
+                connected=false;
+                var delay=TimeSpan.FromSeconds(Math.Min(120,20*Math.Pow(2,Math.Min(recoveries,3))));
+                if(DateTimeOffset.UtcNow-lastReload>=delay) {
+                    recoveries++;lastReload=DateTimeOffset.UtcNow;Say($"Возврат к комнате (попытка {recoveries})…");view.CoreWebView2.Navigate(job.Url);
+                } else Say("Подключение потеряно: главная страница. Ожидаю повторного входа.");
             } else if(kind=="status"&&!connected)Say(text);
         }catch(JsonException){}catch(KeyNotFoundException){}
     }

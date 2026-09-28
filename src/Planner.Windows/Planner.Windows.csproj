@@ -1,5 +1,5 @@
 <Project Sdk="Microsoft.NET.Sdk">
-<PropertyGroup><OutputType>WinExe</OutputType><TargetFramework>net10.0-windows</TargetFramework><UseWindowsForms>true</UseWindowsForms><EnableWindowsTargeting>true</EnableWindowsTargeting><ImplicitUsings>enable</ImplicitUsings><Nullable>enable</Nullable><AssemblyName>LessonPlanner</AssemblyName><Version>0.5.0</Version><ApplicationManifest>app.manifest</ApplicationManifest></PropertyGroup>
+<PropertyGroup><OutputType>WinExe</OutputType><TargetFramework>net10.0-windows</TargetFramework><UseWindowsForms>true</UseWindowsForms><EnableWindowsTargeting>true</EnableWindowsTargeting><ImplicitUsings>enable</ImplicitUsings><Nullable>enable</Nullable><AssemblyName>LessonPlanner</AssemblyName><Version>0.5.1</Version><ApplicationManifest>app.manifest</ApplicationManifest></PropertyGroup>
 <ItemGroup><ProjectReference Include="../Planner.Core/Planner.Core.csproj"/><PackageReference Include="Microsoft.Web.WebView2" Version="1.0.4191.47"/><EmbeddedResource Include="Assets/automation.js"/></ItemGroup>
 <Target Name="RemoveUnusedWebViewWpf" BeforeTargets="ResolveAssemblyReferences"><ItemGroup><Reference Remove="@(Reference)" Condition="'%(Reference.Filename)' == 'Microsoft.Web.WebView2.Wpf'"/></ItemGroup></Target>
 </Project>

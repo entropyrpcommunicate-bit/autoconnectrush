@@ -1,7 +1,7 @@
 [
   [
     "landing-recovery",
-    "location.pathname='/'; document.body.innerText='Яндекс Телемост — видеозвонки и чаты. Скачайте приложение';",
+    "location.pathname='/'; document.body.innerText='Яндекс Телемост — видеозвонки и чаты. Скачайте приложение. Войдите в аккаунт'; window.__plannerLandingSince=Date.now()-6000;",
     "result === 'LANDING'"
   ],
   [
@@ -73,5 +73,35 @@
     "disabled-join",
     "controls=[button('Подключиться')]; controls[0].disabled=true; fields=[new HTMLInputElement('Гость')];",
     "clicked.length === 0"
+  ],
+  [
+    "landing-room-url",
+    "location.pathname='/'; document.body.innerText='Яндекс Телемост — видеозвонки и чаты. Скачайте приложение. Войдите в аккаунт'; window.__plannerLandingSince=Date.now()-6000;location.pathname='/j/123';",
+    "result === 'LANDING'"
+  ],
+  [
+    "landing-iframe",
+    "location.pathname='/'; document.body.innerText='Яндекс Телемост — видеозвонки и чаты. Скачайте приложение. Войдите в аккаунт'; window.__plannerLandingSince=Date.now()-6000;window.top={};",
+    "result === 'LANDING'"
+  ],
+  [
+    "landing-sidebar-hangup",
+    "location.pathname='/'; document.body.innerText='Яндекс Телемост — видеозвонки и чаты. Скачайте приложение. Войдите в аккаунт'; window.__plannerLandingSince=Date.now()-6000;controls=[button('Завершить звонок')];",
+    "result === 'LANDING'"
+  ],
+  [
+    "landing-grace-period",
+    "document.body.innerText='Яндекс Телемост Скачайте приложение Войдите в аккаунт';",
+    "result !== 'LANDING' && window.__plannerLandingSince > 0"
+  ],
+  [
+    "landing-disappears",
+    "window.__plannerLandingSince=Date.now()-6000;document.body.innerText='Ожидание допуска';",
+    "result !== 'LANDING' && window.__plannerLandingSince === undefined"
+  ],
+  [
+    "login-is-not-landing",
+    "document.body.innerText='Войдите в аккаунт';",
+    "result !== 'LANDING'"
   ]
 ]

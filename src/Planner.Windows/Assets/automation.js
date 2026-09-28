@@ -68,9 +68,15 @@ function step() {
             window.__plannerLastJoin = Date.now(); window.__plannerJoinCount = (window.__plannerJoinCount || 0) + 1;
             join.click(); return 'CLICKED';
           }
-          if (controls.some(e => /^(покинуть встречу|выйти из встречи|завершить звонок|leave meeting)$/.test(label(e)))) return 'Виден интерфейс встречи; дождитесь подтверждения соединения';
+          // Telemost can show its home screen inside a frame while retaining /j/... .
           const pageText = norm(document.body?.innerText);
-          if (window === window.top && /^\/?$/.test(location.pathname) && pageText.includes('яндекс телемост') && pageText.includes('скачайте приложение')) return 'LANDING';
+          const landing = pageText.includes('яндекс телемост') && pageText.includes('скачайте приложение') && pageText.includes('войдите в аккаунт');
+          if (landing) {
+            window.__plannerLandingSince ??= Date.now();
+            return Date.now() - window.__plannerLandingSince >= 5000 ? 'LANDING' : 'Проверяю возврат на главную страницу';
+          }
+          delete window.__plannerLandingSince;
+          if (controls.some(e => /^(покинуть встречу|выйти из встречи|завершить звонок|leave meeting)$/.test(label(e)))) return 'Виден интерфейс встречи; дождитесь подтверждения соединения';
           return 'Ожидание формы, допуска организатора или ручного входа';
         }
 function advance() {

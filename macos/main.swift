@@ -51,6 +51,7 @@ class Planner: NSObject, NSApplicationDelegate, WKNavigationDelegate, WKUIDelega
     var busyFrames = Set<String>()
     var lastRecovery = Date.distantPast
     var recoveryCount = 0
+    var navigationGeneration = 0
     var connected = false
     var activity: NSObjectProtocol?
     let urlField = NSTextField(string: "")
@@ -68,7 +69,7 @@ class Planner: NSObject, NSApplicationDelegate, WKNavigationDelegate, WKUIDelega
         root.submenu!.addItem(withTitle: "Выйти из планировщика", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q")
         NSApp.mainMenu = menu
         window = NSWindow(contentRect: NSRect(x:0,y:0,width:980,height:680), styleMask:[.titled,.closable,.miniaturizable,.resizable], backing:.buffered, defer:false)
-        window.title = "Пары · планировщик 0.4.1"; window.center(); window.delegate = self
+        window.title = "Пары · планировщик 0.4.2"; window.center(); window.delegate = self
         let stack = NSStackView(); stack.orientation = .vertical; stack.alignment = .leading; stack.spacing = 12
         stack.translatesAutoresizingMaskIntoConstraints = false
         window.contentView!.addSubview(stack)
@@ -218,29 +219,40 @@ class Planner: NSObject, NSApplicationDelegate, WKNavigationDelegate, WKUIDelega
             window.__plannerLastJoin = Date.now(); window.__plannerJoinCount = (window.__plannerJoinCount || 0) + 1;
             join.click(); return 'CLICKED';
           }
-          if (controls.some(e => /^(покинуть встречу|выйти из встречи|завершить звонок|leave meeting)$/.test(label(e)))) return 'Виден интерфейс встречи; дождитесь подтверждения соединения';
+          // Telemost can show its home screen inside a frame while retaining /j/... .
           const pageText = norm(document.body?.innerText);
-          if (window === window.top && /^\/?$/.test(location.pathname) && pageText.includes('яндекс телемост') && pageText.includes('скачайте приложение')) return 'LANDING';
+          const landing = pageText.includes('яндекс телемост') && pageText.includes('скачайте приложение') && pageText.includes('войдите в аккаунт');
+          if (landing) {
+            window.__plannerLandingSince ??= Date.now();
+            return Date.now() - window.__plannerLandingSince >= 5000 ? 'LANDING' : 'Проверяю возврат на главную страницу';
+          }
+          delete window.__plannerLandingSince;
+          if (controls.some(e => /^(покинуть встречу|выйти из встречи|завершить звонок|leave meeting)$/.test(label(e)))) return 'Виден интерфейс встречи; дождитесь подтверждения соединения';
           return 'Ожидание формы, допуска организатора или ручного входа';
         })()
         """#.replacingOccurrences(of:"NAME_VALUE",with:encoded)
+        let generation = navigationGeneration
         let targets: [(String, WKFrameInfo?)] = [("main", nil)] + frames.map { ($0.key, Optional($0.value)) }
         for (key, frame) in targets where !busyFrames.contains(key) {
             busyFrames.insert(key)
             web.evaluateJavaScript(script, in: frame, in: .page) { [weak self, weak web] result in
                 guard let self = self else { return }
                 self.busyFrames.remove(key)
-                guard self.active == j.id, self.web === web else { return }
+                guard self.active == j.id, self.web === web, self.navigationGeneration == generation, Date() < j.end else { return }
                 switch result {
                 case .success(let value):
                     guard let s = value as? String else { return }
                     if s == "CLICKED" { self.attempts += 1; self.status.stringValue = "Нажата кнопка входа. Жду подтверждения соединения." }
                     else if s == "LANDING" {
-                        if !self.connected && self.recoveryCount < 3 && Date().timeIntervalSince(self.lastRecovery) > 20 {
+                        self.connected = false
+                        let delay = min(120.0, 20.0 * pow(2.0, Double(min(self.recoveryCount, 3))))
+                        if Date().timeIntervalSince(self.lastRecovery) >= delay {
                             self.recoveryCount += 1; self.lastRecovery = Date()
-                            self.status.stringValue = "Вместо комнаты открылась главная. Повторяю переход по ссылке (\(self.recoveryCount)/3)."
+                            self.status.stringValue = "Вместо комнаты открылась главная. Повторный вход №\(self.recoveryCount)."
                             web?.load(URLRequest(url:URL(string:j.url)!))
-                        } else if !self.connected { self.status.stringValue = "Телемост перенаправил на главную — подключение не подтверждено." }
+                        } else {
+                            self.status.stringValue = "Подключение потеряно: главная страница. Ожидаю повторного входа."
+                        }
                     } else if s != "Ожидание формы, допуска организатора или ручного входа" && !self.connected { self.status.stringValue = s }
                 case .failure:
                     if key != "main" { self.frames.removeValue(forKey:key) }
@@ -258,7 +270,7 @@ class Planner: NSObject, NSApplicationDelegate, WKNavigationDelegate, WKUIDelega
             status.stringValue = s
         }
     }
-    func webView(_ webView:WKWebView, didStartProvisionalNavigation navigation:WKNavigation!) { frames.removeAll(); busyFrames.removeAll(); connected = false }
+    func webView(_ webView:WKWebView, didStartProvisionalNavigation navigation:WKNavigation!) { navigationGeneration += 1; frames.removeAll(); busyFrames.removeAll(); connected = false }
     func webView(_ webView:WKWebView, didFinish navigation:WKNavigation!) {
         if let j = jobs.first(where:{$0.id == active}) { tryJoin(j) }
     }

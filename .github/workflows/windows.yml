@@ -1,4 +1,4 @@
-name: Windows builds
+name: Desktop builds
 on:
   push:
     branches: [main]
@@ -39,8 +39,21 @@ jobs:
           name: AutoConnectRush-${{ matrix.runtime }}
           path: dist/AutoConnectRush-${{ matrix.runtime }}.zip
           if-no-files-found: error
+  macos:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Universal build and scheduler self-test
+        run: bash scripts/publish-macos.sh
+      - uses: actions/upload-artifact@v4
+        with:
+          name: AutoConnectRush-macos
+          path: |
+            dist/AutoConnectRush-macos-*.zip
+            dist/SHA256SUMS-macos.txt
+          if-no-files-found: error
   release:
-    needs: build
+    needs: [build, macos]
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     permissions:
@@ -61,4 +74,4 @@ jobs:
             echo "Release $VERSION already exists; bump Version for a new release."
             exit 0
           fi
-          gh release create "$VERSION" packages/*.zip packages/SHA256SUMS.txt --target "$GITHUB_SHA" --prerelease --title "AutoConnectRush $VERSION — Windows beta" --notes-file RELEASE_NOTES.md
+          gh release create "$VERSION" packages/*.zip packages/SHA256SUMS.txt --target "$GITHUB_SHA" --prerelease --title "AutoConnectRush $VERSION — Windows and Mac beta" --notes-file RELEASE_NOTES.md

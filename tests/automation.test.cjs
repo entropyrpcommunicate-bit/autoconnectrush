@@ -22,9 +22,13 @@ function button(text){return {innerText:text,offsetWidth:10,getAttribute:()=>'',
 var controls=[],fields=[];
 var document={body:{innerText:''},querySelectorAll:q=>q.startsWith('button')?controls:fields,getElementById:()=>null,addEventListener:()=>{}};
 `;
+const mac = fs.readFileSync(path.join(__dirname,'../macos/main.swift'),'utf8');
+const macStep = mac.split('        let script = #"""')[1].split('"""#.replacingOccurrences')[0].trim().replaceAll('NAME_VALUE','config.name');
+for (const [platform,implementation] of [['Windows',script],['Mac','function step(){return '+macStep+';}']]) {
 for(const [name,setup,check] of cases){
- const c=vm.createContext({DOMException});vm.runInContext(fixture+script+'\n'+setup+'\nvar result=step();',c);
- assert.equal(vm.runInContext(check,c),true,name);console.log('PASS: '+name);
+ const c=vm.createContext({DOMException});vm.runInContext(fixture+implementation+'\n'+setup+'\nvar result=step();',c);
+ assert.equal(vm.runInContext(check,c),true,name);console.log('PASS: '+platform+' '+name);
+}
 }
 (async()=>{
  const c=vm.createContext({DOMException});vm.runInContext(fixture+script,c);
