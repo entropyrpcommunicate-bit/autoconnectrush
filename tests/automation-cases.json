@@ -1,0 +1,77 @@
+[
+  [
+    "landing-recovery",
+    "location.pathname='/'; document.body.innerText='Яндекс Телемост — видеозвонки и чаты. Скачайте приложение';",
+    "result === 'LANDING'"
+  ],
+  [
+    "cooldown-does-not-block-notice",
+    "window.__plannerLastJoin=Date.now(); controls=[button('Понятно')]; controls[0].parentElement={innerText:'Включить видео не удалось',parentElement:null};",
+    "clicked[0] === 'Понятно'"
+  ],
+  [
+    "join-cooldown",
+    "window.__plannerLastJoin=Date.now(); controls=[button('Подключиться')]; fields=[new HTMLInputElement('Test Participant')];",
+    "clicked.length === 0"
+  ],
+  [
+    "iframe-host",
+    "location.hostname='runtime.strm.yandex.ru'; controls=[button('Понятно')]; controls[0].parentElement={innerText:'Включить видео не удалось',parentElement:null};",
+    "clicked[0] === 'Понятно'"
+  ],
+  [
+    "camera-notice",
+    "controls=[button('Понятно'),button('Подключиться')]; controls[0].parentElement={innerText:'Включить видео не удалось. Проверьте, что камера подключена и выбрана в настройках Телемоста. Понятно',parentElement:null}; fields=[new HTMLInputElement('Гость')];",
+    "clicked.length === 1 && clicked[0] === 'Понятно' && fields[0].value === 'Гость'"
+  ],
+  [
+    "unrelated-notice",
+    "controls=[button('Понятно')]; controls[0].parentElement={innerText:'Условия использования. Понятно',parentElement:null};",
+    "clicked.length === 0"
+  ],
+  [
+    "global-page-not-notice",
+    "controls=[button('Понятно')]; document.body={innerText:'Включить видео не удалось. камера подключена'}; controls[0].parentElement=document.body;",
+    "clicked.length === 0"
+  ],
+  [
+    "browser",
+    "controls=[button('Продолжить в браузере')];",
+    "clicked[0] === 'Продолжить в браузере'"
+  ],
+  [
+    "guest-with-sidebar",
+    "controls=[button('Завершить звонок'),button('Подключиться')]; fields=[new HTMLInputElement('Гость')];",
+    "fields[0].value === 'Test Participant' && clicked.length === 0"
+  ],
+  [
+    "verified-name",
+    "controls=[button('Завершить звонок'),button('Подключиться')]; fields=[new HTMLInputElement('Test Participant')];",
+    "clicked[0] === 'Подключиться'"
+  ],
+  [
+    "unknown-name",
+    "controls=[button('Подключиться')]; fields=[];",
+    "clicked.length === 0"
+  ],
+  [
+    "ambiguous-name",
+    "controls=[button('Подключиться')]; fields=[new HTMLInputElement('Гость'),new HTMLInputElement('Гость')];",
+    "clicked.length === 0"
+  ],
+  [
+    "turn-off-first",
+    "controls=[button('Подключиться'),button('Выключить микрофон')]; fields=[new HTMLInputElement('Test Participant')];",
+    "clicked[0] === 'Выключить микрофон' && clicked.length === 1"
+  ],
+  [
+    "already-off",
+    "controls=[button('Подключиться'),button('Включить микрофон')]; fields=[new HTMLInputElement('Test Participant')];",
+    "clicked[0] === 'Подключиться'"
+  ],
+  [
+    "disabled-join",
+    "controls=[button('Подключиться')]; controls[0].disabled=true; fields=[new HTMLInputElement('Гость')];",
+    "clicked.length === 0"
+  ]
+]

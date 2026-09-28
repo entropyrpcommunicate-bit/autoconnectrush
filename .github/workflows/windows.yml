@@ -1,0 +1,64 @@
+name: Windows builds
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: windows-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        runtime: [win-x64, win-x86, win-arm64]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Scheduler tests
+        run: dotnet run --project tests/Planner.Tests -c Release
+      - name: Browser automation tests
+        run: node tests/automation.test.cjs
+      - name: Package
+        run: ./scripts/publish.ps1 -Runtime ${{ matrix.runtime }}
+      - name: Windows launch smoke test
+        if: matrix.runtime != 'win-arm64'
+        shell: pwsh
+        run: |
+          $p = Start-Process "dist/${{ matrix.runtime }}/LessonPlanner.exe" -ArgumentList '--smoke-test' -PassThru
+          if (-not $p.WaitForExit(30000)) { $p.Kill(); throw 'App launch timed out' }
+          if ($p.ExitCode -ne 0) { throw "App exit code $($p.ExitCode)" }
+      - uses: actions/upload-artifact@v4
+        with:
+          name: AutoConnectRush-${{ matrix.runtime }}
+          path: dist/AutoConnectRush-${{ matrix.runtime }}.zip
+          if-no-files-found: error
+  release:
+    needs: build
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          path: packages
+          merge-multiple: true
+      - name: Create beta release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          VERSION="v$(sed -n 's/.*<Version>\([^<]*\)<\/Version>.*/\1/p' src/Planner.Windows/Planner.Windows.csproj)"
+          sha256sum packages/*.zip > packages/SHA256SUMS.txt
+          if gh release view "$VERSION" >/dev/null 2>&1; then
+            echo "Release $VERSION already exists; bump Version for a new release."
+            exit 0
+          fi
+          gh release create "$VERSION" packages/*.zip packages/SHA256SUMS.txt --target "$GITHUB_SHA" --prerelease --title "AutoConnectRush $VERSION — Windows beta" --notes-file RELEASE_NOTES.md

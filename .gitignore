@@ -1,0 +1,11 @@
+**/bin/
+**/obj/
+dist/
+.vs/
+*.user
+*.suo
+*.log
+jobs.json
+BrowserProfile/
+.env
+.DS_Store
