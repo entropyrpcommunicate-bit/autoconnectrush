@@ -1,6 +1,6 @@
-# AutoConnectRush — планировщик Телемоста для Windows
+# AutoConnectRush — планировщик Телемоста для Windows и Mac
 
-**Бета 0.5.0.** Локальное приложение: расписание по Москве, ввод имени, подключение и выход. Не требует Codex, ChatGPT, Python или отдельной установки .NET. Доступ к камере, микрофону и захвату экрана запрещён; звук встроенного браузера выключен.
+**Windows 0.5.0 / Mac 0.4.1 — бета.** Локальное приложение: расписание по Москве, ввод имени, подключение и выход. Не требует Codex, ChatGPT, Python или отдельной установки .NET. Доступ к камере, микрофону и захвату экрана запрещён. На Windows звук встроенного браузера выключен; на Mac приглушается HTML-медиа, для полной тишины выключи системную громкость.
 
 [Скачать сборки](https://github.com/entropyrpcommunicate-bit/autoconnectrush/releases) · [Исходники](https://github.com/entropyrpcommunicate-bit/autoconnectrush)
 
@@ -13,11 +13,16 @@
 | Windows 10 x86 (32 бита) | `AutoConnectRush-win-x86.zip` | Сборка для 32 бит; не проверено на этой ОС |
 | Windows 11 ARM64 (например Snapdragon) | `AutoConnectRush-win-arm64.zip` | Нативная сборка; не проверено на устройстве |
 | Windows 7 / 8 / 8.1 / XP | — | Не поддерживаются актуальными .NET и WebView2 |
-| macOS / Linux | — | Эти EXE предназначены только для Windows |
+| macOS 13+ (Apple Silicon / Intel) | `AutoConnectRush-macos-universal.zip` | Mac 0.4.1; Intel отдельно не проверен |
+| Linux | — | Нет сборки |
 
 Поддержка приложения не равна поддержке ОС Microsoft: Windows 10 Home/Pro уже вне обычной поддержки; подробности зависят от редакции и ESU. Для новой установки предпочтительна поддерживаемая Windows 11. [Требования Edge](https://learn.microsoft.com/en-us/deployedge/microsoft-edge-supported-operating-systems), [требования .NET](https://learn.microsoft.com/en-us/dotnet/core/install/windows).
 
-## Установка — для друзей
+## Установка на Mac
+
+Скачай `AutoConnectRush-macos-universal.zip`, распакуй и перенеси «Планировщик пар.app» в «Программы». Имя и ссылку каждый вводит самостоятельно. Подробности запуска, ограничений звука и защиты от сна — в [инструкции Mac](macos/ИНСТРУКЦИЯ.md). Версия Mac использует встроенный WebKit; .NET и WebView2 ей не нужны.
+
+## Установка Windows — для друзей
 
 1. Открой Releases и скачай нужный ZIP. В большинстве случаев это **win-x64**. Тип системы указан в Параметры → Система → О системе.
 2. Полностью распакуй ZIP в отдельную папку. Не запускай EXE прямо из архива и не выноси его из папки: нужны DLL рядом.
